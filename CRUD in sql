@@ -1,0 +1,24 @@
+CREATE TABLE Employees (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100) NOT NULL,
+ age INT NOT NULL,
+ position VARCHAR(50)
+);
+
+INSERT INTO Employees (name, age, position) 
+VALUES 
+('John Doe', 30, 'Software Engineer'),
+('Jane Smith', 25, 'Data Analyst'),
+('Alice Johnson', 28, 'Product Manager'),
+('Bob Brown', 35, 'DevOps Engineer');
+
+SELECT * FROM Employees;
+
+UPDATE Employees 
+SET position = 'Senior Software Engineer', age = 31 
+WHERE name = 'John Doe';
+
+DELETE FROM Employees 
+WHERE name = 'Bob Brown';
+
+SELECT * FROM Employees;
