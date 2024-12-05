@@ -1,0 +1,103 @@
+backend:
+const express = require("express");
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000", // React frontend address
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("message", (data) => {
+    io.emit("message", data); // Broadcast message to all connected clients
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+
+server.listen(4000, () => {
+  console.log("Server is running on http://localhost:4000");
+});
+
+
+fontend:
+import React, { useState, useEffect } from "react";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:4000");
+
+function App() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    socket.on("message", (data) => {
+      setMessages((prevMessages) => [...prevMessages, data]);
+    });
+    return () => {
+      socket.off("message");
+    };
+  }, []);
+
+  const sendMessage = () => {
+    if (message.trim()) {
+      socket.emit("message", message);
+      setMessage("");
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <h1>Real-Time Chat</h1>
+      <div
+        style={{
+          border: "1px solid #ccc",
+          padding: "10px",
+          height: "300px",
+          overflowY: "scroll",
+          marginBottom: "10px",
+        }}
+      >
+        {messages.map((msg, index) => (
+          <div key={index} style={{ marginBottom: "5px" }}>
+            {msg}
+          </div>
+        ))}
+      </div>
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        style={{ width: "70%", padding: "10px" }}
+        placeholder="Type a message"
+      />
+      <button
+        onClick={sendMessage}
+        style={{
+          padding: "10px 20px",
+          marginLeft: "10px",
+          backgroundColor: "blue",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Send
+      </button>
+    </div>
+  );
+}
+
+export default App;
